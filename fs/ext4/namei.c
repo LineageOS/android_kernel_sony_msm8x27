@@ -2054,7 +2054,7 @@ int ext4_orphan_del(handle_t *handle, struct inode *inode)
 
 	if ((!EXT4_SB(inode->i_sb)->s_journal) &&
 	    !(EXT4_SB(inode->i_sb)->s_mount_state & EXT4_ORPHAN_FS))
-		return 0;
+			return 0;
 
 	mutex_lock(&EXT4_SB(inode->i_sb)->s_orphan_lock);
 	if (list_empty(&ei->i_orphan))
