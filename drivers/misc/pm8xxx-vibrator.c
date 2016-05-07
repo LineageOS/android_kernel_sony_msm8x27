@@ -46,10 +46,6 @@ struct pm8xxx_vib {
 
 static struct pm8xxx_vib *vib_dev;
 
-/*PERI-AH-VIBRATOR_Add_level_file_node-00+[ */
-int vib_Level;
-/*PERI-AH-VIBRATOR_Add_level_file_node-00+] */
-
 int pm8xxx_vibrator_config(struct pm8xxx_vib_config *vib_config)
 {
 	u8 reg = 0;
@@ -158,8 +154,7 @@ retry:
 	}
 
 	/*PERI-AH-VIBRATOR_Add_level_file_node-00+[ */
-	vib->level = vib_Level;
-	dev_info(vib->dev, "set vibrator level: %d, value: %d.\n", vib_Level, value);
+	dev_info(vib->dev, "set vibrator level: %d, value: %d.\n", vib->level, value);
 	/*PERI-AH-VIBRATOR_Add_level_file_node-00+] */
 
 	if (value == 0)
@@ -211,26 +206,35 @@ static enum hrtimer_restart pm8xxx_vib_timer_func(struct hrtimer *timer)
 static ssize_t vib_level_show(struct device *dev,
 				    struct device_attribute *attr, char *buf)
 {
-	dev_info(dev, "vib_level_show %d.\n", vib_Level);
-	return snprintf(buf, PAGE_SIZE, "%d\n", vib_Level);
+	struct timed_output_dev *tdev = dev_get_drvdata(dev);
+	struct pm8xxx_vib *vib = container_of(tdev, struct pm8xxx_vib,
+					      timed_dev);
+	dev_info(dev, "vib_level_show %d.\n", vib->level);
+	return snprintf(buf, PAGE_SIZE, "%d\n", vib->level);
 }
 
 static ssize_t vib_level_store(struct device *dev,
 				     struct device_attribute *attr,
 				     const char *buf, size_t size)
 {
-	int Level;
+	struct timed_output_dev *tdev = dev_get_drvdata(dev);
+	struct pm8xxx_vib *vib = container_of(tdev, struct pm8xxx_vib,
+					      timed_dev);
+	int level;
+	int ret;
 
-	Level = simple_strtoul(buf, NULL, 10);
-  
-  	dev_info(dev, "vib_level_store %d.\n", Level);
-	
-	if (Level > 0)
-	{
-		vib_Level = Level / 100;
+	ret = kstrtoint(buf, 10, &level);
+	if (ret) {
+		dev_err(dev, "%s: error getting level\n", __func__);
+		return -EINVAL;
 	}
+
+	dev_info(dev, "vib_level_show %d.\n", vib->level);
+
+	vib->level = clamp_t(int, VIB_MIN_LEVEL_mV / 100,
+			     VIB_MAX_LEVEL_mV / 100, level);
 	
-	return sizeof(Level);
+	return size;
 }
 
 static struct device_attribute dev_attr_level = {
@@ -316,9 +320,8 @@ static int __devinit pm8xxx_vib_probe(struct platform_device *pdev)
 		goto err_read_vib;
 
 	/*PERI-AH-VIBRATOR_Add_level_file_node-00+[ */
-	vib_Level = vib->level;
-	dev_info(&pdev->dev, "default vib_Level %d \n", vib_Level);
-	
+	dev_info(&pdev->dev, "default vib_Level %d \n", vib->level);
+
 	/* Set voltage parameter of vibrator(corresponding to the file node /sys/class/timed_output/vibrator/level) */
 	rc = device_create_file(vib->timed_dev.dev, &dev_attr_level);	
 	if (rc) {
