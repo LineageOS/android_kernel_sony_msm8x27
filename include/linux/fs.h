@@ -495,9 +495,6 @@ struct iattr {
  */
 #include <linux/quota.h>
 
-
-/**
-=======
 /*
  * Maximum number of layers of fs stack.  Needs to be limited to
  * prevent kernel stack overflow
