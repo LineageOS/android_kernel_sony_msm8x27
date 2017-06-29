@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da87b5cf_b9d7f722",
+        "filename": "include/linux/fs.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 500,
+      "author": {
+        "id": 13589
+      },
+      "writtenOn": "2017-06-29T07:43:08Z",
+      "side": 1,
+      "message": "Mismerge.",
+      "revId": "2d7dbd185831088605e60f0682a68de916a43342",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71",
+      "unresolved": false
+    }
+  ]
+}
